@@ -9,6 +9,10 @@ readme = "README.md"
 python = "^3.12"
 pandas = "^2.2.2"
 requests = "^2.32.2"
+sqlalchemy = "^2.0.30"
+loguru = "^0.7.2"
+psycopg2 = "^2.9.9"
+regex = "^2024.5.15"
 
 
 [build-system]

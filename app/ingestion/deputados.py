@@ -1,12 +1,97 @@
+from loguru import logger
+from sqlalchemy import create_engine
+
 import json
 import pandas as pd
+import re
 import requests
 
-response=requests.get("https://dadosabertos.camara.leg.br/api/v2/deputados?ordem=ASC&ordenarPor=nome").json()
-df = pd.DataFrame.from_dict(response["dados"], orient='columns')
+BASE_ENDPOINT="https://dadosabertos.camara.leg.br/api/v2"
+ANO=2022
+TABLE_NAME_DEPUTADOS="deputados"
+TABLE_NAME_DEPUTADOS_DESPESAS="despesas"
 
-with open("response.json", "w") as fp:
-    json.dump(response , fp)   
+def normalize_dataframe_column_name(df):
+    new_columns={}
+    old_columns=df.columns.values.tolist()
+
+    for column in old_columns:
+        column_normalized = re.sub(r'([A-Z])', r'_\1', column)
+        column_normalized = column_normalized.replace(' ', '_')
+        column_normalized = column_normalized.replace(':', '_')
+        column_normalized = column_normalized.replace('%', '_')
+        column_normalized = column_normalized.replace('$', '_')
+        column_normalized = column_normalized.replace('*', '_')
+        column_normalized = column_normalized.replace('-', '_')
+        column_normalized = column_normalized.replace(';', '_')
+        column_normalized = column_normalized.replace('/', '_')
+        column_normalized = column_normalized.replace('[', '_')
+        column_normalized = column_normalized.replace(']', '_')
+        column_normalized = column_normalized.lower()
+        
+        new_columns[column]=column_normalized
 
 
-print(df)
+    df.rename(columns=new_columns, inplace=True)
+    return df
+
+
+def put_to_database(df, table_name, if_exists="append"):
+    engine = create_engine("postgresql://root:password@localhost/postgres")
+    logger.info(f"Engine created!")
+
+    df.to_sql(
+        table_name
+        , engine
+        , index=False
+        , if_exists=if_exists
+    )
+    logger.info(f"Data save on \"{table_name}\"!")
+
+
+def get_deputados(save_json=False):
+    response=requests.get(f"{BASE_ENDPOINT}/deputados?ordem=ASC&ordenarPor=nome").json()
+
+    if not response["dados"] == []:
+        df=pd.DataFrame.from_dict(response["dados"], orient="columns")
+        df=normalize_dataframe_column_name(df)
+
+    if save_json:
+        with open("response_deputados.json", "w") as file:
+            json.dump(response , file)
+    
+    return df
+
+
+def get_deputados_despesas(id_candidato, save_json=False):
+    response=requests.get(f"{BASE_ENDPOINT}/deputados/{id_candidato}/despesas?ano={ANO}&ordem=ASC&ordenarPor=ano").json()
+    df=None
+
+    if not response["dados"] == []:
+        df = pd.DataFrame.from_dict(response["dados"], orient="columns")
+        df=normalize_dataframe_column_name(df)
+
+    if save_json:
+        with open("response_deputados_despesas.json", "w") as file:
+            json.dump(response , file)
+
+    return df
+
+
+def main():
+    # deputados
+    deputados=get_deputados()
+    put_to_database(deputados, TABLE_NAME_DEPUTADOS, if_exists="replace")
+
+    # despesas
+    ids_candidatos=deputados["id"].to_list()
+    for id in ids_candidatos:
+        deputados_despesas=get_deputados_despesas(id_candidato=id)
+
+        if isinstance(deputados_despesas, pd.DataFrame) and not deputados_despesas.empty:
+            put_to_database(deputados_despesas, TABLE_NAME_DEPUTADOS_DESPESAS)
+
+
+main()
+
+# print(ids_candidatos)
