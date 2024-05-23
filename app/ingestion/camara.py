@@ -40,12 +40,14 @@ def put_to_database(df, table_name, if_exists="append"):
     engine = create_engine("postgresql://root:password@localhost/postgres")
     logger.info(f"Engine created!")
 
+    # with engine.connect() as conn:
     df.to_sql(
         table_name
         , engine
         , index=False
         , if_exists=if_exists
     )
+    engine.dispose()
     logger.info(f"Data save on \"{table_name}\"!")
 
 
@@ -68,7 +70,7 @@ def get_deputados_despesas(id_candidato, save_json=False):
     df=None
 
     if not response["dados"] == []:
-        df = pd.DataFrame.from_dict(response["dados"], orient="columns")
+        df=pd.DataFrame.from_dict(response["dados"], orient="columns")
         df=normalize_dataframe_column_name(df)
 
     if save_json:
