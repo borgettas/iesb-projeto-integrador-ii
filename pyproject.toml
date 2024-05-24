@@ -13,6 +13,7 @@ sqlalchemy = "^2.0.30"
 loguru = "^0.7.2"
 psycopg2 = "^2.9.9"
 regex = "^2024.5.15"
+mlxtend = "^0.23.1"
 
 
 [build-system]
