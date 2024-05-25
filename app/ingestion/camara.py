@@ -37,28 +37,35 @@ def normalize_dataframe_column_name(df):
 
 
 def put_to_database(df, table_name, if_exists="append"):
+    # Criando a engine para conexão
     engine = create_engine("postgresql://root:password@localhost/postgres")
     logger.info(f"Engine created!")
 
-    # with engine.connect() as conn:
+    # Salvando os dados no banco de dados
     df.to_sql(
         table_name
         , engine
         , index=False
         , if_exists=if_exists
     )
+    # encerrando a engine
     engine.dispose()
     logger.info(f"Data save on \"{table_name}\"!")
 
 
 def get_deputados(save_json=False):
+    # requisitando os dados no endpoint da API
     response=requests.get(f"{BASE_ENDPOINT}/deputados?ordem=ASC&ordenarPor=nome").json()
 
+    # caso exista os dados dos deputados
     if not response["dados"] == []:
+        # criar um dataframe com as colunas normalizadas
         df=pd.DataFrame.from_dict(response["dados"], orient="columns")
         df=normalize_dataframe_column_name(df)
 
+    # caso seja verdadeiro
     if save_json:
+        # salvar os dados no diretório atual em formato .json
         with open("response_deputados.json", "w") as file:
             json.dump(response , file)
     
@@ -69,11 +76,15 @@ def get_deputados_despesas(id_candidato, save_json=False):
     response=requests.get(f"{BASE_ENDPOINT}/deputados/{id_candidato}/despesas?ano={ANO}&ordem=ASC&ordenarPor=ano").json()
     df=None
 
+    # caso exista os dados dos deputados
     if not response["dados"] == []:
+        # criar um dataframe com as colunas normalizadas
         df=pd.DataFrame.from_dict(response["dados"], orient="columns")
         df=normalize_dataframe_column_name(df)
 
+    # caso seja verdadeiro
     if save_json:
+        # salvar os dados no diretório atual em formato .json
         with open("response_deputados_despesas.json", "w") as file:
             json.dump(response , file)
 
