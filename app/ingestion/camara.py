@@ -38,7 +38,7 @@ def normalize_dataframe_column_name(df):
 
 def put_to_database(df, table_name, if_exists="append"):
     # Criando a engine para conexão
-    engine = create_engine("postgresql://root:password@localhost/postgres")
+    engine = create_engine("postgresql://root:password@localhost:5433/postgres")
     logger.info(f"Engine created!")
 
     # Salvando os dados no banco de dados

@@ -12,9 +12,9 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: postgres
     expose:
-    - 5432
+    - 5433
     ports:
-      - 5432:5432
+      - 5433:5432
     volumes:
       - ${PWD}/docker/postgres/scripts/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
     networks:

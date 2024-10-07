@@ -11,9 +11,9 @@ pandas = "^2.2.2"
 requests = "^2.32.2"
 sqlalchemy = "^2.0.30"
 loguru = "^0.7.2"
-psycopg2 = "^2.9.9"
 regex = "^2024.5.15"
 mlxtend = "^0.23.1"
+psycopg2-binary = "^2.9.9"
 
 
 [build-system]
