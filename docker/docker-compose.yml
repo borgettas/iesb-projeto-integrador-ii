@@ -20,14 +20,14 @@ services:
     networks:
       - dev
 
-  notebook:
-    image: jupyter/pyspark-notebook:spark-3.1.2
-    ports:
-      - "8888:8888"
-    volumes:
-      - ${PWD}/app/analytics:/home/jovyan/notebooks
-    networks:
-      - dev
+  # notebook:
+  #   image: jupyter/pyspark-notebook:spark-3.1.2
+  #   ports:
+  #     - "8888:8888"
+  #   volumes:
+  #     - ${PWD}/app/analytics:/home/jovyan/notebooks
+  #   networks:
+  #     - dev
 
 networks:
   dev:
